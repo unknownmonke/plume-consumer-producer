@@ -20,6 +20,10 @@ wrapper {
 
 repositories {
     mavenCentral()
+    maven {
+        // Schema registry is located in a custom Confluent repository.
+        url = uri("https://packages.confluent.io/maven/")
+    }
 }
 
 configurations {
@@ -31,6 +35,7 @@ configurations {
 // ------- Versions ------- //
 
 def kafkaVersion = '4.2.0'
+def schemaRegistryVersion = '8.3.0'
 def jacksonVersion = '3.2.0'
 def slf4jVersion = '2.0.17'
 def log4j2Version = '2.25.2'
@@ -45,6 +50,8 @@ def awaitilityVersion = '4.3.0'
 dependencies {
     // --------- Kafka --------- //
     implementation "org.apache.kafka:kafka-clients:$kafkaVersion"
+    implementation "io.confluent:kafka-schema-registry-client:$schemaRegistryVersion"
+    implementation "io.confluent:kafka-avro-serializer:$schemaRegistryVersion"
 
     // --------- JSON ---------- //
     implementation "tools.jackson.core:jackson-databind:$jacksonVersion"

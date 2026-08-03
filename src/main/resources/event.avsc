@@ -1,0 +1,148 @@
+{
+	"namespace": "org.plume.event",
+	"name": "Event",
+	"doc": "Avro schema for event common structure. Wraps actual payload and defines event metadata.",
+	"type": "record",
+	"fields": [
+		{
+			"name": "payload",
+			"doc": "Generic payload (JSON or Avro).",
+			"type": "string"
+		},
+		{
+			"name": "metadata",
+			"doc": "Event metadata",
+			"type": {
+				"name": "Metadata",
+				"type": "record",
+				"fields": [
+					{
+						"name": "uuid",
+						"type": "string"
+					},
+					{
+						"name": "correlationId",
+						"type": "string"
+					},
+					{
+						"name": "parentId",
+						"type": [ "null", "string" ],
+						"default": null
+					},
+					{
+						"name": "timestamp",
+						"type": [
+							"null",
+							{
+								"type": "long",
+								"logicalType": "timestamp-millis"
+							}
+						],
+						"default": null
+					},
+					{
+						"name": "type",
+						"type": [
+							"null",
+							{
+								"type": "enum",
+								"name": "Type",
+								"symbols": [
+									"INITIAL",
+									"REPLAY",
+									"ERROR",
+									"ABORT",
+									"IGNORED"
+								]
+							}
+						],
+						"default": null
+					},
+					{
+						"name": "source",
+						"type": [
+							"null",
+							{
+								"type": "record",
+								"name": "Source",
+								"fields": [
+									{
+										"name": "app",
+										"type": "string"
+									},
+									{
+										"name": "domain",
+										"type": "string"
+									},
+									{
+										"name": "component",
+										"type": [ "null", "string" ],
+										"default": null
+									}
+								]
+							}
+						],
+						"default": null
+					},
+					{
+						"name": "identity",
+						"type": [
+							"null",
+							{
+								"type": "record",
+								"name": "Identity",
+								"fields": [
+									{
+										"name": "identifier",
+										"type": "string"
+									},
+									{
+										"name": "authentication",
+										"type": [ "null", "string" ],
+										"default": null
+									}
+								]
+							}
+						],
+						"default": null
+					},
+					{
+						"name": "exposure",
+						"type": [
+							"null",
+							{
+								"type": "enum",
+								"name": "Exposure",
+								"symbols": [
+									"INITIAL",
+									"IGNORED",
+									"ERROR",
+									"REPLAY"
+								]
+							}
+						],
+						"default": null
+					},
+					{
+						"name": "additionalProperties",
+						"type": [
+							"null",
+							{
+								"type": "map",
+								"values": "string"
+							}
+						],
+						"default": null
+					}
+				]
+			}
+		},
+		{
+			"name": "origin",
+			"doc": "Original event that triggered this event.",
+			"type": [ "null", "org.plume.event.Event" ],
+			"default": null
+		}
+	]
+}
+

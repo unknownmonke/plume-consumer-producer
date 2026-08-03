@@ -91,6 +91,7 @@ public class EventConsumer implements Runnable {
         return config;
     }
 
+    // No schema for internal events.
     private InternalEventProducer buildInternalProducer() {
         ProducerBootstrap internalProducerBootstrap = ProducerBootstrap.with(
                 consumerBootstrap.getBootstrapServers(),

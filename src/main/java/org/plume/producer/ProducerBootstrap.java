@@ -1,11 +1,14 @@
 package org.plume.producer;
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.plume.common.AbstractBootstrap;
 import org.plume.security.Security;
 import org.plume.serialization.EventSerializer;
+import org.plume.serialization.SchemaRegistryConfig;
+import org.plume.serialization.SchemaType;
 
 import java.util.Properties;
 
@@ -20,8 +23,9 @@ import static org.plume.common.Constants.ACKS;
 @ToString(callSuper = true)
 public class ProducerBootstrap extends AbstractBootstrap {
 
-    private ProducerBootstrap(String bootstrapServers, String clientId, Security security) {
-        super(bootstrapServers, clientId, security);
+    private ProducerBootstrap(String bootstrapServers, String clientId,
+                              Security security, SchemaRegistryConfig schemaRegistryConfig) {
+        super(bootstrapServers, clientId, security, schemaRegistryConfig);
     }
 
 
@@ -34,7 +38,13 @@ public class ProducerBootstrap extends AbstractBootstrap {
         Properties properties = super.properties();
         properties.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ACKS_CONFIG, ACKS);
-        properties.put(VALUE_SERIALIZER_CLASS_CONFIG, EventSerializer.class);
+
+        // Only Avro supported for now.
+        if (super.getSchemaRegistryConfig() != null && super.getSchemaRegistryConfig().schemaType() == SchemaType.AVRO) {
+            properties.put(VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        } else {
+            properties.put(VALUE_SERIALIZER_CLASS_CONFIG, EventSerializer.class);
+        }
         return properties;
     }
 
@@ -50,9 +60,16 @@ public class ProducerBootstrap extends AbstractBootstrap {
         private final String clientId;
         private final Security security;
 
+        private SchemaRegistryConfig schemaRegistryConfig;
+
+
+        public ProducerBootstrapBuilder withSchemaValidation(SchemaRegistryConfig schemaRegistryConfig) {
+            this.schemaRegistryConfig = schemaRegistryConfig;
+            return this;
+        }
 
         public ProducerBootstrap build() {
-            return new ProducerBootstrap(bootstrapServers, clientId, security);
+            return new ProducerBootstrap(bootstrapServers, clientId, security, schemaRegistryConfig);
         }
     }
 }

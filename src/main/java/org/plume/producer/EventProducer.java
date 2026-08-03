@@ -83,6 +83,7 @@ public class EventProducer {
         return config;
     }
 
+    // No schema for internal events.
     private InternalEventProducer buildInternalProducer() {
         ProducerBootstrap internalProducerBootstrap = ProducerBootstrap.with(
                 producerBootstrap.getBootstrapServers(),
