@@ -41,8 +41,7 @@ public class Event implements Serializable {
         this.payload = payload;
         this.metadata = Metadata.with(
                 randomUUID().toString(),
-                correlationId
-            )
+                correlationId)
             .timestamp(timestamp == null ? Instant.now() : timestamp)
             .type(type)
             .source(source)
@@ -65,8 +64,7 @@ public class Event implements Serializable {
         this.payload = payload;
         this.metadata = Metadata.with(
                 randomUUID().toString(),
-                origin.getMetadata().correlationId()
-            )
+                origin.getMetadata().correlationId())
             .parentId(origin.getMetadata().uuid())
             .timestamp(timestamp == null ? Instant.now() : timestamp)
             .type(type)

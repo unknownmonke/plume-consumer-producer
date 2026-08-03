@@ -87,8 +87,8 @@ public class EventProducer {
         ProducerBootstrap internalProducerBootstrap = ProducerBootstrap.with(
                 producerBootstrap.getBootstrapServers(),
                 producerBootstrap.getClientId() + "-internal-producer",
-                producerBootstrap.getSecurity()
-            ).build();
+                producerBootstrap.getSecurity())
+            .build();
         
         return new InternalEventProducer(internalProducerBootstrap);
     }
@@ -143,7 +143,7 @@ public class EventProducer {
         return publishAndMaybeHandleDuplicate(producerRecord);
     }
 
-    public Future<RecordMetadata> publish(String topic, String key, Event event,Callback callback) {
+    public Future<RecordMetadata> publish(String topic, String key, Event event, Callback callback) {
         ProducerRecord<String, Event> producerRecord = producerRecordBuilder.buildRecord(topic, key, event);
 
         return publishAndMaybeHandleDuplicate(producerRecord, callback);

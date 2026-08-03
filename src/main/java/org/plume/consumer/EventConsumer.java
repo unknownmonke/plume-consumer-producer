@@ -95,8 +95,8 @@ public class EventConsumer implements Runnable {
         ProducerBootstrap internalProducerBootstrap = ProducerBootstrap.with(
                 consumerBootstrap.getBootstrapServers(),
                 consumerBootstrap.getClientId() + "-internal-producer",
-                consumerBootstrap.getSecurity()
-            ).build();
+                consumerBootstrap.getSecurity())
+            .build();
 
         return new InternalEventProducer(internalProducerBootstrap);
     }
@@ -151,7 +151,7 @@ public class EventConsumer implements Runnable {
                     ConsumerRecords<String, Event> records = kafkaConsumer.poll(Duration.ofSeconds(5));
 
                     for (ConsumerRecord<String, Event> record : records) {
-                        log.info("------- Processing record: key={}, topic={} at offset={} -------", record.key(), record.topic(), record.offset());
+                        log.info("-------- Processing record: key={}, topic={} at offset={} --------", record.key(), record.topic(), record.offset());
                         maybeProcessRecord(record);
                     }
                 }
@@ -160,11 +160,11 @@ public class EventConsumer implements Runnable {
                 if (!closed.get()) throw e;
 
             } catch (Exception e) {
-                log.error("Error in consumer thread:", e);
+                log.error("Error in consumer thread: ", e);
 
             } finally {
                 kafkaConsumer.close();
-                log.info("------- Consumer stopped -------");
+                log.info("Consumer stopped.");
             }
         }).start();
     }

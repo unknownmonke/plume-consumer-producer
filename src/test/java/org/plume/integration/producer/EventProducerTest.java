@@ -25,7 +25,7 @@ public class EventProducerTest extends AbstractIT {
     void producer_should_publish_event() throws ExecutionException, InterruptedException {
 
         ProducerBootstrap producerBootstrap = ProducerBootstrap.with(
-                kafkaContainer.getBootstrapServers(),
+                KAFKA_CONTAINER.getBootstrapServers(),
                 "client-producer",
                 new PlainTextSecurity()
             ).build();
@@ -43,12 +43,12 @@ public class EventProducerTest extends AbstractIT {
     @Test
     void producer_should_handle_duplicates() throws ExecutionException, InterruptedException {
 
-        // Create event, producer and DLQ topic.
+        // Creates event, producer and DLQ topic.
         ProducerBootstrap producerBootstrap = ProducerBootstrap.with(
-                kafkaContainer.getBootstrapServers(),
+                KAFKA_CONTAINER.getBootstrapServers(),
                 "client-producer",
-                new PlainTextSecurity()
-            ).build();
+                new PlainTextSecurity())
+            .build();
 
         String dlqTopic = getDlqTopic(null, TOPIC);
 
@@ -64,14 +64,14 @@ public class EventProducerTest extends AbstractIT {
             .dlqTopic(dlqTopic)
             .build();
 
-        // Subscribe to all topics.
+        // Subscribes to all topics.
         consumer.subscribe(List.of(TOPIC, dlqTopic));
 
-        // Publish same event twice.
+        // Publishes same event twice.
         eventProducer.publish(TOPIC, "key", event).get();
         eventProducer.publish(TOPIC, "key", event).get();
 
-        // Assert published duplicate has been published to DLQ.
+        // Asserts published duplicate has been published to DLQ.
         ConsumerRecords<String, Event> records = consumer.poll(Duration.ofSeconds(5));
 
         assertThat(records.records(TOPIC).iterator().hasNext()).isTrue();

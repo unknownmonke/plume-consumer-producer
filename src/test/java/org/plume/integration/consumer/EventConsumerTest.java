@@ -32,18 +32,16 @@ public class EventConsumerTest extends AbstractIT {
         List<Event> values = new ArrayList<>();
 
         ConsumerBootstrap consumerBootstrap = ConsumerBootstrap.with(
-                kafkaContainer.getBootstrapServers(),
+                KAFKA_CONTAINER.getBootstrapServers(),
                 "client-consumer",
                 new PlainTextSecurity(),
-                "test-eventconsumer-group"
-            )
+                "test-eventconsumer-group")
             .forTopic(TOPIC)
             .build();
 
         EventConsumer eventConsumer = EventConsumer.with(
                 consumerBootstrap,
-                (_, value) -> values.add(value)
-            )
+                (_, value) -> values.add(value))
             .customProperties(Map.of(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"))
             .build();
 
@@ -66,12 +64,12 @@ public class EventConsumerTest extends AbstractIT {
 
         List<Event> values = new ArrayList<>();
 
-        // Create event, producer, consumer and DLQ topic.
+        // Creates event, producer, consumer and DLQ topic.
         ProducerBootstrap producerBootstrap = ProducerBootstrap.with(
-                kafkaContainer.getBootstrapServers(),
+                KAFKA_CONTAINER.getBootstrapServers(),
                 "client-producer",
-                new PlainTextSecurity()
-            ).build();
+                new PlainTextSecurity())
+            .build();
 
         String dlqTopic = getDlqTopic(null, TOPIC);
 
@@ -80,38 +78,36 @@ public class EventConsumerTest extends AbstractIT {
 
         createTopic(dlqTopic, 1, (short) 1);
 
-        // Use an EventProducer to produce with correct headers.
+        // Uses an EventProducer to produce with correct headers.
         EventProducer eventProducer = EventProducer.with(producerBootstrap).build();
 
         ConsumerBootstrap consumerBootstrap = ConsumerBootstrap.with(
-                kafkaContainer.getBootstrapServers(),
+                KAFKA_CONTAINER.getBootstrapServers(),
                 "client-consumer",
                 new PlainTextSecurity(),
-                "test-eventconsumer-group"
-            )
+                "test-eventconsumer-group")
             .forTopic(TOPIC)
             .build();
 
         EventConsumer eventConsumer = EventConsumer.with(
                 consumerBootstrap,
-                (_, value) -> values.add(value)
-            )
+                (_, value) -> values.add(value))
             .customProperties(Map.of(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"))
             .enableIdempotencyCheck()
             .idempotencyKeyStore(new InMemoryIdempotencyKeyStore())
             .dlqTopic(dlqTopic)
             .build();
 
-        // Subscribe to DLQ topic.
+        // Subscribes to DLQ topic.
         consumer.subscribe(List.of(dlqTopic));
 
-        // Publish same event twice.
+        // Publishes same event twice.
         eventProducer.publish(TOPIC, "key", event);
         eventProducer.publish(TOPIC, "key", event);
 
         eventConsumer.run();
 
-        // Assert duplicate has been consumed and published to DLQ.
+        // Asserts duplicate has been consumed and published to DLQ.
         Awaitility
             .await()
             .atMost(Duration.ofSeconds(15))

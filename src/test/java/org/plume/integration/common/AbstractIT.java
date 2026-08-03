@@ -31,7 +31,7 @@ public abstract class AbstractIT {
     protected AdminClient adminClient;
 
     @Container
-    protected final KafkaContainer kafkaContainer = new KafkaContainer(TestClusterConfig.KAFKA_IMAGE_NAME)
+    protected final KafkaContainer KAFKA_CONTAINER = new KafkaContainer(TestClusterConfig.KAFKA_IMAGE_NAME)
         .withNetwork(Network.newNetwork())                  // Each test suite runs in its own Docker network.
         .withStartupTimeout(Duration.ofSeconds(10))         // Ensures Kafka is ready before tests run.
         .withExposedPorts(TestClusterConfig.CLUSTER_PORT);
@@ -50,11 +50,11 @@ public abstract class AbstractIT {
     }
 
     private void setupClients() {
-        producer = new KafkaProducer<>(TestProducerProperties.getProperties(kafkaContainer.getBootstrapServers()));
-        consumer = new KafkaConsumer<>(TestConsumerProperties.getProperties(kafkaContainer.getBootstrapServers()));
+        producer = new KafkaProducer<>(TestProducerProperties.getProperties(KAFKA_CONTAINER.getBootstrapServers()));
+        consumer = new KafkaConsumer<>(TestConsumerProperties.getProperties(KAFKA_CONTAINER.getBootstrapServers()));
 
         final Properties adminProps = new Properties();
-        adminProps.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
+        adminProps.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CONTAINER.getBootstrapServers());
         adminClient = AdminClient.create(adminProps);
     }
 

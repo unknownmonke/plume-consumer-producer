@@ -15,10 +15,10 @@ import static org.plume.event.TestEventFactory.buildTestEvent;
 public class SetupHealthTest extends AbstractIT {
 
     @Test
-    void should_init_cluster_correctly() throws ExecutionException, InterruptedException {
+    void should_init_cluster() throws ExecutionException, InterruptedException {
 
         // Verifies container is running.
-        assert kafkaContainer.isRunning();
+        assert KAFKA_CONTAINER.isRunning();
 
         // Verifies producer is up.
         producer.send(new ProducerRecord<>(TOPIC, "key", buildTestEvent())).get();
