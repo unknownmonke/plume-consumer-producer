@@ -10,11 +10,11 @@ public class EventFactory {
         return new Event(
             message,
             IGNORED,
-            origin.getMetadata().source(),
-            origin.getMetadata().identity(),
+            origin.metadata().source(),
+            origin.metadata().identity(),
             Exposure.IGNORED,
             Instant.now(),
-            origin.getMetadata().additionalProperties(),
+            origin.metadata().additionalProperties(),
             origin
         );
     }

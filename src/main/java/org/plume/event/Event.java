@@ -1,8 +1,5 @@
 package org.plume.event;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.io.Serializable;
@@ -18,15 +15,11 @@ import static java.util.UUID.randomUUID;
  * <li> Metadata : metadata of event.
  * <li> Origin : origin event if this event is a child of another event (replay, error...).
  */
-@Getter
-@EqualsAndHashCode
-@NoArgsConstructor
-public class Event implements Serializable {
-
-    private Object payload;
-    private Metadata metadata;
-    private Event origin;
-
+public record Event(
+    Object payload,
+    Metadata metadata,
+    Event origin
+) implements Serializable {
 
     // Excludes origin of event.
     public Event(@NonNull Object payload,
@@ -38,8 +31,7 @@ public class Event implements Serializable {
                  Instant timestamp,
                  Map<?, ?> additionalProperties) {
 
-        this.payload = payload;
-        this.metadata = Metadata.with(
+        Metadata metadata = Metadata.with(
                 randomUUID().toString(),
                 correlationId)
             .timestamp(timestamp == null ? Instant.now() : timestamp)
@@ -49,6 +41,8 @@ public class Event implements Serializable {
             .exposure(exposure)
             .additionalProperties(additionalProperties)
             .build();
+
+        this(payload, metadata, null);
     }
 
     // Includes origin of event.
@@ -61,11 +55,10 @@ public class Event implements Serializable {
                  Map<?, ?> additionalProperties,
                  Event origin) {
 
-        this.payload = payload;
-        this.metadata = Metadata.with(
+        Metadata metadata = Metadata.with(
                 randomUUID().toString(),
-                origin.getMetadata().correlationId())
-            .parentId(origin.getMetadata().uuid())
+                origin.metadata().correlationId())
+            .parentId(origin.metadata().uuid())
             .timestamp(timestamp == null ? Instant.now() : timestamp)
             .type(type)
             .source(source)
@@ -73,12 +66,7 @@ public class Event implements Serializable {
             .exposure(exposure)
             .additionalProperties(additionalProperties)
             .build();
-        this.origin = origin;
-    }
 
-    public Event(@NonNull Metadata metadata, @NonNull Object payload, Event origin) {
-        this.payload = payload;
-        this.origin = origin;
-        this.metadata = metadata;
+        this(payload, metadata, origin);
     }
 }

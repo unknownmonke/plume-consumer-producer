@@ -20,7 +20,7 @@ public class Base64HashGenerator implements HashGenerator {
     @Override
     public String hash(Event event) {
         try {
-            byte[] bytes = OBJECT_MAPPER.writeValueAsBytes(event.getPayload());
+            byte[] bytes = OBJECT_MAPPER.writeValueAsBytes(event.payload());
             return ENCODER.encodeToString(bytes);
 
         } catch (JacksonException e) {

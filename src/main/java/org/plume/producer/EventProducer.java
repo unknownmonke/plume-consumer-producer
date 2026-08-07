@@ -193,7 +193,7 @@ public class EventProducer {
             // On error.
             else {
                 log.error("Error trying to publish: correlationId={}, topic={}",
-                    event.getMetadata().correlationId(), producerRecord.topic(), exception);
+                    event.metadata().correlationId(), producerRecord.topic(), exception);
             }
             // Custom provided callback.
             if (callback != null) {

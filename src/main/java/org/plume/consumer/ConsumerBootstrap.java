@@ -1,12 +1,12 @@
 package org.plume.consumer;
 
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.plume.common.AbstractBootstrap;
 import org.plume.security.Security;
+import org.plume.serialization.EventAvroDeserializer;
 import org.plume.serialization.EventDeserializer;
 import org.plume.serialization.SchemaRegistryConfig;
 import org.plume.serialization.SchemaType;
@@ -50,7 +50,7 @@ public class ConsumerBootstrap extends AbstractBootstrap {
 
         // Only Avro supported for now.
         if (super.getSchemaRegistryConfig() != null && super.getSchemaRegistryConfig().schemaType() == SchemaType.AVRO) {
-            properties.put(VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
+            properties.put(VALUE_DESERIALIZER_CLASS_CONFIG, EventAvroDeserializer.class);
         } else {
             properties.put(VALUE_DESERIALIZER_CLASS_CONFIG, EventDeserializer.class);
         }

@@ -20,21 +20,21 @@ public class ProducerRecordBuilder {
 
     public ProducerRecord<String, Event> buildRecord(String topic, String key, Event event) {
         ProducerRecord<String, Event> producerRecord = new ProducerRecord<>(topic, key, event);
-        addHeaders(event.getMetadata(), producerRecord);
+        addHeaders(event.metadata(), producerRecord);
         return producerRecord;
     }
 
     public ProducerRecord<String, Event> buildRecord(String topic, String key, Event event,
                                                      List<? extends Header> headers) {
         ProducerRecord<String, Event> producerRecord = new ProducerRecord<>(topic, key, event);
-        addHeaders(event.getMetadata(), producerRecord);
+        addHeaders(event.metadata(), producerRecord);
         headers.forEach(header -> producerRecord.headers().add(header));
         return producerRecord;
     }
 
     public ProducerRecord<String, Event> buildRecord(String topic, String key, Event event,
                                                      Integer partition, List<? extends Header> headers) {
-        Metadata metadata = event.getMetadata();
+        Metadata metadata = event.metadata();
         ProducerRecord<String, Event> producerRecord = new ProducerRecord<>(topic, partition, key, event);
         addHeaders(metadata, producerRecord);
         headers.forEach(header -> producerRecord.headers().add(header));

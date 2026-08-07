@@ -31,32 +31,24 @@
 					},
 					{
 						"name": "timestamp",
-						"type": [
-							"null",
-							{
-								"type": "long",
-								"logicalType": "timestamp-millis"
-							}
-						],
-						"default": null
+						"type": {
+							"type": "long",
+							"logicalType": "timestamp-nanos"
+						}
 					},
 					{
 						"name": "type",
-						"type": [
-							"null",
-							{
-								"type": "enum",
-								"name": "Type",
-								"symbols": [
-									"INITIAL",
-									"REPLAY",
-									"ERROR",
-									"ABORT",
-									"IGNORED"
-								]
-							}
-						],
-						"default": null
+						"type": {
+							"type": "enum",
+							"name": "Type",
+							"symbols": [
+								"INITIAL",
+								"REPLAY",
+								"ERROR",
+								"ABORT",
+								"IGNORED"
+							]
+						}
 					},
 					{
 						"name": "source",
@@ -108,20 +100,16 @@
 					},
 					{
 						"name": "exposure",
-						"type": [
-							"null",
-							{
-								"type": "enum",
-								"name": "Exposure",
-								"symbols": [
-									"INITIAL",
-									"IGNORED",
-									"ERROR",
-									"REPLAY"
-								]
-							}
-						],
-						"default": null
+						"type": {
+							"type": "enum",
+							"name": "Exposure",
+							"symbols": [
+								"INITIAL",
+								"IGNORED",
+								"ERROR",
+								"REPLAY"
+							]
+						}
 					},
 					{
 						"name": "additionalProperties",

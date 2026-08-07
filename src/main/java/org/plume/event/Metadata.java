@@ -1,7 +1,6 @@
 package org.plume.event;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -9,12 +8,14 @@ import java.util.Map;
 
 /**
  * Event metadata. Each event must provide a UUID and correlationId for exactly-once semantics.
+ *
+ * <p> A timestamp is required and provided by default if not specified in builder.
  */
 public record Metadata(
     @NonNull String uuid,
     @NonNull String correlationId,
+    @NonNull Instant timestamp,
     String parentId,
-    Instant timestamp,
     Type type,
     Source source,
     Identity identity,
@@ -26,18 +27,24 @@ public record Metadata(
         return new MetadataBuilder(uuid, correlationId);
     }
 
-    @RequiredArgsConstructor
     public static class MetadataBuilder {
 
         private final String uuid;
         private final String correlationId;
-        private String parentId;
         private Instant timestamp;
+        private String parentId;
         private Type type;
         private Source source;
         private Identity identity;
         private Exposure exposure;
         private Map<?, ?> additionalProperties;
+
+
+        MetadataBuilder(String uuid, String correlationId) {
+            this.uuid = uuid;
+            this.correlationId = correlationId;
+            this.timestamp = Instant.now();
+        }
 
 
         public MetadataBuilder parentId(String parentId) {
@@ -76,7 +83,7 @@ public record Metadata(
         }
 
         public Metadata build() {
-            return new Metadata(uuid, correlationId, parentId, timestamp,
+            return new Metadata(uuid, correlationId, timestamp, parentId,
                 type, source, identity, exposure, additionalProperties
             );
         }

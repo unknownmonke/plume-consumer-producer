@@ -1,11 +1,11 @@
 package org.plume.producer;
 
-import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.plume.common.AbstractBootstrap;
 import org.plume.security.Security;
+import org.plume.serialization.EventAvroSerializer;
 import org.plume.serialization.EventSerializer;
 import org.plume.serialization.SchemaRegistryConfig;
 import org.plume.serialization.SchemaType;
@@ -41,7 +41,7 @@ public class ProducerBootstrap extends AbstractBootstrap {
 
         // Only Avro supported for now.
         if (super.getSchemaRegistryConfig() != null && super.getSchemaRegistryConfig().schemaType() == SchemaType.AVRO) {
-            properties.put(VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+            properties.put(VALUE_SERIALIZER_CLASS_CONFIG, EventAvroSerializer.class);
         } else {
             properties.put(VALUE_SERIALIZER_CLASS_CONFIG, EventSerializer.class);
         }

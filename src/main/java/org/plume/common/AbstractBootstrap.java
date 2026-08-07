@@ -11,7 +11,6 @@ import org.plume.serialization.SchemaType;
 import java.util.Properties;
 
 import static io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig.*;
-import static io.confluent.kafka.serializers.KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG;
 import static java.util.UUID.randomUUID;
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.CommonClientConfigs.CLIENT_ID_CONFIG;
@@ -50,7 +49,6 @@ public abstract class AbstractBootstrap {
             // Schema must be registered at topic creation.
             properties.put(AUTO_REGISTER_SCHEMAS, false);
             properties.put(USE_LATEST_VERSION, true);
-            properties.put(SPECIFIC_AVRO_READER_CONFIG, true);
         }
         return properties;
     }
