@@ -133,8 +133,8 @@ public class EventConsumer implements Runnable {
                         "Provide one via idempotencyKeyStore(...) " +
                         "or remove enableIdempotencyCheck() for default behavior.");
             }
-            log.warn("Producer-side IdempotencyKeyStore feature is explicitly disabled. "
-                + "Duplicate events will not be detected and may be published more than once.");
+            log.warn("Consumer-side IdempotencyKeyStore feature is explicitly disabled. "
+                + "Duplicate events will not be detected and may be processed more than once.");
         }
         return idempotencyKeyStore;
     }
