@@ -83,12 +83,13 @@ public class EventProducer {
         return config;
     }
 
-    // No schema for internal events.
+    // Internal events use the same schema when validation is enabled.
     private InternalEventProducer buildInternalProducer() {
         ProducerBootstrap internalProducerBootstrap = ProducerBootstrap.with(
                 producerBootstrap.getBootstrapServers(),
                 producerBootstrap.getClientId() + "-internal-producer",
                 producerBootstrap.getSecurity())
+            .withSchemaValidation(producerBootstrap.getSchemaRegistryConfig())
             .build();
         
         return new InternalEventProducer(internalProducerBootstrap);

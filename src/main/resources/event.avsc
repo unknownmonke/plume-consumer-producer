@@ -128,7 +128,7 @@
 		{
 			"name": "origin",
 			"doc": "Original event that triggered this event.",
-			"type": [ "null", "org.plume.event.Event" ],
+			"type": [ "null", "Event" ],
 			"default": null
 		}
 	]

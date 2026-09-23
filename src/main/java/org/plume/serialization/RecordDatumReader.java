@@ -30,7 +30,7 @@ public class RecordDatumReader<T extends Record> extends ReflectDatumReader<T> {
     }
 
     private T toJavaRecord(GenericData.Record record) {
-        Class<T> recordClass = data().getClass(record.getSchema());
+        Class<?> recordClass = data().getClass(record.getSchema());
 
         try {
             // Fields of record class.
@@ -44,8 +44,8 @@ public class RecordDatumReader<T extends Record> extends ReflectDatumReader<T> {
                 components[i] = record.get(recordComponents[i].getName());
                 constructorTypes[i] = recordComponents[i].getType();
             }
-            Constructor<T> constructor = recordClass.getConstructor(constructorTypes);
-            return constructor.newInstance(components);
+            Constructor<?> constructor = recordClass.getConstructor(constructorTypes);
+            return (T) constructor.newInstance(components);
 
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);

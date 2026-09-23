@@ -91,12 +91,13 @@ public class EventConsumer implements Runnable {
         return config;
     }
 
-    // No schema for internal events.
+    // Internal events use the same schema when validation is enabled.
     private InternalEventProducer buildInternalProducer() {
         ProducerBootstrap internalProducerBootstrap = ProducerBootstrap.with(
                 consumerBootstrap.getBootstrapServers(),
                 consumerBootstrap.getClientId() + "-internal-producer",
                 consumerBootstrap.getSecurity())
+            .withSchemaValidation(consumerBootstrap.getSchemaRegistryConfig())
             .build();
 
         return new InternalEventProducer(internalProducerBootstrap);
