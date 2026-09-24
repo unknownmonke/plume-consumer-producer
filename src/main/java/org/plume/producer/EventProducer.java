@@ -184,7 +184,9 @@ public class EventProducer {
         return kafkaProducer.send(producerRecord, (metadata, exception) -> {
             // On success.
             if (exception == null) {
-                idempotencyKeyStore.save(producerRecord);
+                if (enableIdempotencyCheck) {
+                    idempotencyKeyStore.save(producerRecord);
+                }
 
                 log.debug("Acknowledged record: \n Topic: {}\n Partition: {}\n Offset: {}\n Timestamp: {}",
                     metadata.topic(),

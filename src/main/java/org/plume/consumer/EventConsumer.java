@@ -191,15 +191,18 @@ public class EventConsumer implements Runnable {
             handleDeserializationException(consumerRecord);
             return;
         }
-
         if (enableIdempotencyCheck) {
             if (isDuplicate(consumerRecord)) {
                 publishToDlq(consumerRecord);
                 return;
             }
-            idempotencyKeyStore.save(consumerRecord, consumerBootstrap.getGroupId());
         }
-        consumerFunction.accept(consumerRecord.headers(), consumerRecord.value());
+        consumerFunction.andThen((_, _) -> {
+                if (enableIdempotencyCheck) {
+                    idempotencyKeyStore.save(consumerRecord, consumerBootstrap.getGroupId());
+                }
+            }
+        ).accept(consumerRecord.headers(), consumerRecord.value());
     }
 
     private boolean isDuplicate(ConsumerRecord<String, Event> consumerRecord) {
