@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.header.Headers;
+import org.plume.consumer.processing.ErrorOnFallback;
 import org.plume.event.Event;
 import org.plume.event.EventFactory;
 import org.plume.idempotency.IdempotencyKeyStore;
@@ -15,14 +16,17 @@ import org.plume.lifecycle.ShutdownManager;
 import org.plume.lifecycle.StartupManager;
 import org.plume.producer.InternalEventProducer;
 import org.plume.producer.ProducerBootstrap;
+import org.plume.serialization.EventDeserializationException;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-import static org.plume.common.Constants.getDlqTopic;
+import static org.plume.common.Constants.getOrInferDlqTopic;
+import static org.plume.common.Constants.getOrInferErrorTopic;
 
 @Slf4j
 public class EventConsumer implements Runnable {
@@ -31,12 +35,14 @@ public class EventConsumer implements Runnable {
 
     private final ConsumerBootstrap consumerBootstrap;
     private final BiConsumer<Headers, Event> consumerFunction;
+    private final Consumer<ErrorOnFallback> errorCallback;
     private final StartupManager startupManager;
     private final ShutdownManager shutdownManager;
     private final Map<?, ?> customProperties;
     private final boolean enableIdempotencyCheck;
     private final IdempotencyKeyStore idempotencyKeyStore;
     private final String dlqTopic;
+    private final String errorTopic;
 
     private KafkaConsumer<String, Event> kafkaConsumer;
     private InternalEventProducer internalProducer;
@@ -44,23 +50,26 @@ public class EventConsumer implements Runnable {
 
     private EventConsumer(@NonNull ConsumerBootstrap consumerBootstrap,
                          @NonNull BiConsumer<Headers, Event> consumerFunction,
+                         Consumer<ErrorOnFallback> errorCallback,
                          StartupManager startupManager,
                          ShutdownManager shutdownManager,
                          Map<?, ?> customProperties,
                          boolean enableIdempotencyCheck,
                          IdempotencyKeyStore idempotencyKeyStore,
-                         String dlqTopic
+                         String dlqTopic, String errorTopic
     ) {
         log.info("Initializing consumer...");
 
         this.consumerBootstrap = consumerBootstrap;
         this.consumerFunction = consumerFunction;
+        this.errorCallback = errorCallback;
         this.startupManager = startupManager;
         this.shutdownManager = shutdownManager;
         this.customProperties = customProperties;
         this.enableIdempotencyCheck = enableIdempotencyCheck;
         this.idempotencyKeyStore = maybeSetIdempotencyStore(idempotencyKeyStore);
         this.dlqTopic = dlqTopic;
+        this.errorTopic = errorTopic;
 
         setupConsumer();
     }
@@ -177,9 +186,16 @@ public class EventConsumer implements Runnable {
     }
 
     private void maybeProcessRecord(ConsumerRecord<String, Event> consumerRecord) {
+
+        if (consumerRecord.value().payload() instanceof EventDeserializationException) {
+            handleDeserializationException(consumerRecord);
+            return;
+        }
+
         if (enableIdempotencyCheck) {
             if (isDuplicate(consumerRecord)) {
                 publishToDlq(consumerRecord);
+                return;
             }
             idempotencyKeyStore.save(consumerRecord, consumerBootstrap.getGroupId());
         }
@@ -187,7 +203,6 @@ public class EventConsumer implements Runnable {
     }
 
     private boolean isDuplicate(ConsumerRecord<String, Event> consumerRecord) {
-
         if (idempotencyKeyStore.exists(consumerRecord, consumerBootstrap.getGroupId()).isPresent()) {
 
             log.info("⚠ Duplicate event detected: key={}, topic={} at offset={}",
@@ -198,7 +213,7 @@ public class EventConsumer implements Runnable {
     }
 
     private void publishToDlq(ConsumerRecord<String, Event> originalRecord) {
-        String topic = getDlqTopic(dlqTopic, originalRecord.topic());
+        String topic = getOrInferDlqTopic(dlqTopic, originalRecord.topic());
         String key = originalRecord.key();
         Event event = originalRecord.value();
 
@@ -206,6 +221,28 @@ public class EventConsumer implements Runnable {
 
         log.info("(Publishing duplicate to DLQ: key={}, topic={})", key, topic);
         internalProducer.publish(topic, key, ignoredEvent);
+    }
+
+    private void handleDeserializationException(ConsumerRecord<String, Event> consumerRecord) {
+        String topic = getOrInferErrorTopic(errorTopic, consumerRecord.topic());
+
+        log.info("(Publishing error event to error topic: key={}, topic={})", consumerRecord.key(), consumerRecord.topic());
+
+        internalProducer.publish(topic, consumerRecord.key(), consumerRecord.value());
+        maybeApplyFallbackOnError(consumerRecord);
+    }
+
+    /**
+     * Applies user-provided callback if present.
+     */
+    private void maybeApplyFallbackOnError(ConsumerRecord<String, Event> consumerRecord) {
+        if (this.errorCallback != null) {
+            Event errorEvent = consumerRecord.value();
+            EventDeserializationException exception = (EventDeserializationException) errorEvent.payload();
+
+            this.errorCallback.accept(
+                new ErrorOnFallback(errorEvent, consumerRecord.key(), consumerRecord.offset(), consumerRecord.partition(), exception));
+        }
     }
 
     /* ------------------------------------------------------------------------ */
@@ -218,13 +255,19 @@ public class EventConsumer implements Runnable {
 
         private final ConsumerBootstrap consumerBootstrap;
         private final BiConsumer<Headers, Event> consumerFunction;
+        private Consumer<ErrorOnFallback> errorCallback;
         private StartupManager startupManager;
         private ShutdownManager shutdownManager;
         private Map<?, ?> customProperties;
         private boolean enableIdempotencyCheck = false;
         private IdempotencyKeyStore idempotencyKeyStore;
         private String dlqTopic;
+        private String errorTopic;
 
+        public ConsumerBuilder errorCallback(Consumer<ErrorOnFallback> errorCallback) {
+            this.errorCallback = errorCallback;
+            return this;
+        }
 
         public ConsumerBuilder startupManager(StartupManager startupManager) {
             this.startupManager = startupManager;
@@ -256,10 +299,16 @@ public class EventConsumer implements Runnable {
             return this;
         }
 
+        public ConsumerBuilder errorTopic(String errorTopic) {
+            this.errorTopic = errorTopic;
+            return this;
+        }
+
         public EventConsumer build() {
             return new EventConsumer(
-                consumerBootstrap, consumerFunction, startupManager, shutdownManager,
-                customProperties, enableIdempotencyCheck, idempotencyKeyStore, dlqTopic
+                consumerBootstrap, consumerFunction, errorCallback, startupManager, shutdownManager,
+                customProperties, enableIdempotencyCheck, idempotencyKeyStore, dlqTopic,
+                errorTopic
             );
         }
     }

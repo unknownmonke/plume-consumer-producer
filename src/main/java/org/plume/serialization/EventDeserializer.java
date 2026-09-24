@@ -1,12 +1,14 @@
 package org.plume.serialization;
 
-import org.apache.kafka.common.errors.SerializationException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.plume.event.Event;
+import org.plume.event.EventFactory;
 import tools.jackson.core.JacksonException;
 
 import static org.plume.serialization.Mapper.OBJECT_MAPPER;
 
+@Slf4j
 public class EventDeserializer implements Deserializer<Event> {
 
     @Override
@@ -15,7 +17,10 @@ public class EventDeserializer implements Deserializer<Event> {
             return OBJECT_MAPPER.readValue(data, Event.class);
 
         } catch (JacksonException e) {
-            throw new SerializationException("Error deserializing event", e);
+            log.error("Event deserialization failed for topic: {} - {}", topic, e.getMessage());
+
+            return EventFactory.buildErrorEvent(
+                String.format("Event deserialization failure: %s", e.getMessage()), e, data);
         }
     }
 }

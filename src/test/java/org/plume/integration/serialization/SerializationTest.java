@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutionException;
 
 import static io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig.VALUE_SUBJECT_NAME_STRATEGY;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.plume.common.Constants.getDlqTopic;
+import static org.plume.common.Constants.getOrInferDlqTopic;
 import static org.plume.event.TestEventFactory.buildTestEvent;
 
 /**
@@ -104,7 +104,7 @@ public class SerializationTest extends AbstractIT {
         List<Event> values = new ArrayList<>();
         Event event = buildTestEvent();
 
-        String dlqTopic = getDlqTopic(null, TOPIC);
+        String dlqTopic = getOrInferDlqTopic(null, TOPIC);
         createTopic(dlqTopic, 1, (short) 1);
 
         // Registers schema beforehand.

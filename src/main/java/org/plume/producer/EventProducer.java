@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
-import static org.plume.common.Constants.getDlqTopic;
+import static org.plume.common.Constants.getOrInferDlqTopic;
 
 @Slf4j
 public class EventProducer {
@@ -174,7 +174,6 @@ public class EventProducer {
             if (isDuplicate(producerRecord)) {
                 return publishToDlq(producerRecord);
             }
-            idempotencyKeyStore.save(producerRecord);
         }
         return publishRecord(producerRecord, callback);
     }
@@ -185,6 +184,8 @@ public class EventProducer {
         return kafkaProducer.send(producerRecord, (metadata, exception) -> {
             // On success.
             if (exception == null) {
+                idempotencyKeyStore.save(producerRecord);
+
                 log.debug("Acknowledged record: \n Topic: {}\n Partition: {}\n Offset: {}\n Timestamp: {}",
                     metadata.topic(),
                     metadata.partition(),
@@ -212,7 +213,7 @@ public class EventProducer {
     }
 
     private Future<RecordMetadata> publishToDlq(ProducerRecord<String, Event> originalRecord) {
-        String topic = getDlqTopic(dlqTopic, originalRecord.topic());
+        String topic = getOrInferDlqTopic(dlqTopic, originalRecord.topic());
         String key = originalRecord.key();
         Event event = originalRecord.value();
 

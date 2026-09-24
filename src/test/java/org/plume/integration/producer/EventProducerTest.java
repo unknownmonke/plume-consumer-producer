@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.plume.common.Constants.getDlqTopic;
+import static org.plume.common.Constants.getOrInferDlqTopic;
 import static org.plume.event.TestEventFactory.buildTestEvent;
 
 public class EventProducerTest extends AbstractIT {
@@ -50,7 +50,7 @@ public class EventProducerTest extends AbstractIT {
                 new PlainTextSecurity())
             .build();
 
-        String dlqTopic = getDlqTopic(null, TOPIC);
+        String dlqTopic = getOrInferDlqTopic(null, TOPIC);
 
         // Event must be created once to share the same timestamp.
         Event event = buildTestEvent();
