@@ -1,9 +1,10 @@
-package org.plume.serialization;
+package org.plume.serialization.avro;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.reflect.ReflectData;
 import org.plume.event.Event;
+import org.plume.serialization.SchemaUtils;
 
 import java.lang.reflect.Type;
 

@@ -1,4 +1,4 @@
-package org.plume.serialization;
+package org.plume.serialization.avro;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumWriter;
@@ -7,6 +7,7 @@ import org.apache.avro.io.EncoderFactory;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Serializer;
 import org.plume.event.Event;
+import org.plume.serialization.SchemaUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

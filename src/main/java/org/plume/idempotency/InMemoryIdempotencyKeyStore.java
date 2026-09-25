@@ -11,7 +11,7 @@ import static org.plume.event.EventHeaders.IDEMPOTENCY_KEY;
 import static org.plume.event.EventHeaders.TIMESTAMP;
 
 /**
- * Default implementation of an idempotency key store using a {@code HashSet} to store and retrieve keys.
+ * Default implementation of an idempotency key store using an {@code HashSet} to store and retrieve keys.
  */
 public class InMemoryIdempotencyKeyStore implements IdempotencyKeyStore {
 

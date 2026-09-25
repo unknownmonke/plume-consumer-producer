@@ -1,4 +1,4 @@
-package org.plume.serialization;
+package org.plume.serialization.avro;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;

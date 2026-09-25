@@ -5,7 +5,7 @@ import lombok.ToString;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.plume.common.AbstractBootstrap;
 import org.plume.security.Security;
-import org.plume.serialization.EventAvroSerializer;
+import org.plume.serialization.avro.EventAvroSerializer;
 import org.plume.serialization.EventSerializer;
 import org.plume.serialization.SchemaRegistryConfig;
 import org.plume.serialization.SchemaType;

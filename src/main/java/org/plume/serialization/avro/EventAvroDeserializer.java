@@ -1,4 +1,4 @@
-package org.plume.serialization;
+package org.plume.serialization.avro;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
@@ -8,6 +8,7 @@ import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.plume.event.Event;
 import org.plume.event.EventFactory;
+import org.plume.serialization.SchemaUtils;
 
 import java.io.IOException;
 

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.avro.data.TimeConversions;
 import org.plume.event.Event;
+import org.plume.serialization.avro.RecordData;
 
 import java.io.BufferedReader;
 import java.io.IOException;
