@@ -4,8 +4,8 @@ plugins {
 }
 
 group = 'org.plume'
-description = 'Kafka consumer wrapper'
-version = '0.0.1'
+description = 'Wrapper for Kafka producers & consumers.'
+version = '0.1.0'
 
 // Sets Java version.
 java {
