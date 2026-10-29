@@ -207,7 +207,7 @@ public class EventProducer {
     }
 
     private boolean isDuplicate(ProducerRecord<String, Event> producerRecord) {
-        if (idempotencyKeyStore.exists(producerRecord).isPresent()) {
+        if (idempotencyKeyStore.exists(producerRecord)) {
             log.info("⚠ Duplicate event detected: key={}, topic={}", producerRecord.key(), producerRecord.topic());
             return true;
         }

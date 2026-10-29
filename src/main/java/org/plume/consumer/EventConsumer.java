@@ -148,6 +148,8 @@ public class EventConsumer implements Runnable {
         return idempotencyKeyStore;
     }
 
+    /* ------------------------------------------------------------------------ */
+
     /**
      * Polls into a separate thread to not block main thread on infinite loop.
      */
@@ -205,8 +207,10 @@ public class EventConsumer implements Runnable {
         ).accept(consumerRecord.headers(), consumerRecord.value());
     }
 
+    /* ------------------------------------------------------------------------ */
+
     private boolean isDuplicate(ConsumerRecord<String, Event> consumerRecord) {
-        if (idempotencyKeyStore.exists(consumerRecord, consumerBootstrap.getGroupId()).isPresent()) {
+        if (idempotencyKeyStore.exists(consumerRecord, consumerBootstrap.getGroupId())) {
 
             log.info("⚠ Duplicate event detected: key={}, topic={} at offset={}",
                 consumerRecord.key(), consumerRecord.topic(), consumerRecord.offset());
@@ -226,19 +230,21 @@ public class EventConsumer implements Runnable {
         internalProducer.publish(topic, key, ignoredEvent);
     }
 
+    /* ------------------------------------------------------------------------ */
+
     private void handleDeserializationException(ConsumerRecord<String, Event> consumerRecord) {
         String topic = getOrInferErrorTopic(errorTopic, consumerRecord.topic());
 
         log.info("(Publishing error event to error topic: key={}, topic={})", consumerRecord.key(), consumerRecord.topic());
 
         internalProducer.publish(topic, consumerRecord.key(), consumerRecord.value());
-        maybeApplyFallbackOnError(consumerRecord);
+        maybeApplyErrorCallback(consumerRecord);
     }
 
     /**
      * Applies user-provided callback if present.
      */
-    private void maybeApplyFallbackOnError(ConsumerRecord<String, Event> consumerRecord) {
+    private void maybeApplyErrorCallback(ConsumerRecord<String, Event> consumerRecord) {
         if (this.errorCallback != null) {
             Event errorEvent = consumerRecord.value();
             EventDeserializationException exception = (EventDeserializationException) errorEvent.payload();

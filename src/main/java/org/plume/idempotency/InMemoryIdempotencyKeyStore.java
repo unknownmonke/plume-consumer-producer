@@ -19,15 +19,36 @@ public class InMemoryIdempotencyKeyStore implements IdempotencyKeyStore {
 
 
     @Override
-    public Optional<IdempotencyKey> exists(ConsumerRecord<String, Event> consumerRecord, String groupId) {
+    public boolean exists(ConsumerRecord<String, Event> consumerRecord, String groupId) {
+        IdempotencyKey key = createIdempotencyKey(consumerRecord, groupId);
+        return store.stream().anyMatch(key::equals);
+    }
+
+    @Override
+    public boolean exists(ProducerRecord<String, Event> producerRecord) {
+        IdempotencyKey key = createIdempotencyKey(producerRecord);
+        return store.stream().anyMatch(key::equals);
+    }
+
+    @Override
+    public Optional<IdempotencyKey> find(ConsumerRecord<String, Event> consumerRecord, String groupId) {
         IdempotencyKey key = createIdempotencyKey(consumerRecord, groupId);
         return store.stream().filter(key::equals).findFirst();
     }
 
     @Override
-    public Optional<IdempotencyKey> exists(ProducerRecord<String, Event> producerRecord) {
+    public Optional<IdempotencyKey> find(ProducerRecord<String, Event> producerRecord) {
         IdempotencyKey key = createIdempotencyKey(producerRecord);
         return store.stream().filter(key::equals).findFirst();
+    }
+
+    @Override
+    public List<IdempotencyKey> findAll(String key, String topic, String groupId) {
+        return store.stream()
+            .filter(k -> k.key().equals(key)
+                && k.topic().equals(topic)
+                && k.groupId().equals(groupId))
+            .toList();
     }
 
     @Override
@@ -42,22 +63,13 @@ public class InMemoryIdempotencyKeyStore implements IdempotencyKeyStore {
         store.add(key);
     }
 
-    @Override
-    public List<IdempotencyKey> search(String key, String topic, String groupId) {
-        return store.stream()
-                .filter(k -> k.key().equals(key)
-                    && k.topic().equals(topic)
-                    && k.groupId().equals(groupId))
-                .toList();
-    }
-
     private IdempotencyKey createIdempotencyKey(ConsumerRecord<String, Event> consumerRecord, String groupId) {
         return new IdempotencyKey(
             consumerRecord.key(),
             consumerRecord.topic(),
+            groupId,
             new String(consumerRecord.headers().lastHeader(IDEMPOTENCY_KEY).value()),
-            Instant.parse(new String(consumerRecord.headers().lastHeader(TIMESTAMP).value())),
-            groupId
+            Instant.parse(new String(consumerRecord.headers().lastHeader(TIMESTAMP).value()))
         );
     }
 
